@@ -8,8 +8,8 @@ import datetime
 import pandas
 import talib
 
-access = "pZuOj1PKWP8vnijaCtnllsAdFHl7u1NZFu9F3BxK"
-secret = "tidRwi75358bTdvgIKdmTrEZy6LK3vICJgKaE2uK"
+access = "key"
+secret = "key"
 
 def get_target_price(ticker, k):
     """변동성 돌파 전략으로 매수 목표가 조회"""
@@ -44,6 +44,8 @@ def calindicator(ticker):
     df['bbandup'] = upper
     df['bbandmid'] = middle
     df['bbandlow'] = lower
+    df['momentum'] = talib.MOM(np.asarray(df['close']), timeperiod=10)
+    df['momentumo'] = talib.CMO(df['close'], timeperiod=14)
     return df
 
 def get_balance(ticker):
@@ -122,31 +124,22 @@ while True:
         avg = get_balance_avg(code)
         ada = get_balance(code)
         krw = get_balance("KRW")
+        momen = indicator['momentum']
 
-        if (current_price > indicator['psar'][-1]) and (close(ticker) < indicator['psar'][-2]):
+        if momen[-2] <0 and momen[-1] > 0:
             if not has_item(code):
                 if krw > 5000:
                     upbit.buy_market_order(ticker, krw*0.9995)
                     print("매수!!")
             else:
                 print('가즈아~')
-        elif indicator['bbandlow'][-1] > current_price:
-            if not has_item(code):
-                if krw > 5000:
-                    upbit.buy_market_order(ticker, krw * 0.9995)
-                    print("매수!!")
-            else:
-                print("가즈아~")
         elif (indicator['macd'][-1] < indicator['macd'][-2]):
             ada = get_balance(code)
-            if has_item(code):
-                if -2 < (current_price*ada - avg*ada) / avg*ada*100 <= 0:
-                    print("손절 준비중..ㅠㅠ")
-                elif 0 < (current_price - avg*ada) / avg*ada*100 < 0.5:
-                    print("제발 익절 준비중....")
-                elif (ada * current_price) > 5000:
-                    upbit.sell_market_order(ticker, ada)
-                    print('매도!!')
+            if not has_item(code):
+                if (((current_price*ada) - (avg*ada)) / (avg*ada))*100 < -2 or (((current_price*ada) - (avg*ada)) / (avg*ada))*100 > 0.5:
+                    if (ada * current_price) > 5000:
+                        upbit.sell_market_order(ticker, ada)
+                        print('매도!!')
             else:
                 print("wait...")
         else:
