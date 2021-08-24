@@ -8,8 +8,8 @@ import datetime
 import pandas
 import talib
 
-access = "key"
-secret = "key"
+access = "pZuOj1PKWP8vnijaCtnllsAdFHl7u1NZFu9F3BxK"
+secret = "tidRwi75358bTdvgIKdmTrEZy6LK3vICJgKaE2uK"
 
 def get_target_price(ticker, k):
     """변동성 돌파 전략으로 매수 목표가 조회"""
@@ -126,24 +126,28 @@ while True:
         krw = get_balance("KRW")
         momen = indicator['momentum']
 
-        if momen[-2] <0 and momen[-1] > 0:
+
+        if momen[-2] <5 and momen[-1] > 5:
             if not has_item(code):
                 if krw > 5000:
                     upbit.buy_market_order(ticker, krw*0.9995)
                     print("매수!!")
-            else:
-                print('가즈아~')
         elif (indicator['macd'][-1] < indicator['macd'][-2]):
             ada = get_balance(code)
-            if not has_item(code):
-                if (((current_price*ada) - (avg*ada)) / (avg*ada))*100 < -2 or (((current_price*ada) - (avg*ada)) / (avg*ada))*100 > 0.5:
+            if has_item(code):
+                dif_rate = (((current_price * ada) - (avg * ada)) / (avg * ada)) * 100
+                if dif_rate < -2 or dif_rate > 0.5:
                     if (ada * current_price) > 5000:
                         upbit.sell_market_order(ticker, ada)
                         print('매도!!')
+                else:
+                    print("젭알... 올라라")
             else:
-                print("wait...")
+                print("wait....")
+        elif has_item(code):
+            print("더더 올라라...")
         else:
-            print("wait...")
+            print("wait....")
 
         time.sleep(1)
     except Exception as e:
