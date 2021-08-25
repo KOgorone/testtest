@@ -6,10 +6,10 @@ import pyupbit
 import pandas as pd
 import datetime
 import pandas
-import talib
 
-access = "K"
-secret = "t2uK"
+
+access = "pZuOj1PKWP8vnijaCtnllsAdFHl7u1NZFu9F3BxK"
+secret = "tidRwi75358bTdvgIKdmTrEZy6LK3vICJgKaE2uK"
 
 def get_target_price(ticker, k):
     """변동성 돌파 전략으로 매수 목표가 조회"""
@@ -31,22 +31,44 @@ def get_ma15(ticker):
 # 기술지표 구하기
 def calindicator(ticker):
     df = pyupbit.get_ohlcv(ticker, interval="minute10", count=200)
-    df['ma5'] = talib.SMA(np.asarray(df['close']), 5)
-    df['ma20'] = talib.SMA(np.asarray(df['close']), 20)
-    df['ma60'] = talib.SMA(np.asarray(df['close']), 60)
-    macd, macds, macdo = talib.MACD(np.asarray(df['close']), 12, 26, 9)
-    df['macd'] = macd
-    df['macds'] = macds
-    df['macdo'] = macdo
-    df['rsi'] = talib.RSI(np.asarray(df['close']), 14)
-    df['psar'] = talib.SAR(df['high'], df['low'], acceleration=0.02,maximum=2)
-    upper, middle, lower = talib.BBANDS(np.asarray(df['close']), timeperiod=20, nbdevup=2, nbdevdn=2, matype=0)
-    df['bbandup'] = upper
-    df['bbandmid'] = middle
-    df['bbandlow'] = lower
-    df['momentum'] = talib.MOM(np.asarray(df['close']), timeperiod=10)
-    df['momentumo'] = talib.CMO(df['close'], timeperiod=14)
+    df['ma5'] = df['close'].rolling(window=5).mean()
+    df['ma20'] = df['close'].rolling(window=20).mean()
+    df['ma60'] = df['close'].rolling(window=60).mean()
+    # macd, macds, macdo = talib.MACD(np.asarray(df['close']), 12, 26, 9)
+    # df['macd'] = macd
+    # df['macds'] = macds
+    # df['macdo'] = macdo
+    df['ma12'] = round(df['close'].ewm(span=12).mean(), 2)
+    df['ma26'] = round(df['close'].ewm(span=26).mean(), 2)
+    df['macd'] = round(df.apply(lambda x: (x['ma12'] - x['ma26']), axis=1), 2)
+    df['macds'] = round(df['macd'].ewm(span=9).mean(), 2)
+    df['macdo'] = round(df['macd'] - df['macds'], 2)
+    # df['psar'] = talib.SAR(df['high'], df['low'], acceleration=0.02,maximum=2)
+    # upper, middle, lower = talib.BBANDS(np.asarray(df['close']), timeperiod=20, nbdevup=2, nbdevdn=2, matype=0)
+    # df['bbandup'] = upper
+    # df['bbandmid'] = middle
+    # df['bbandlow'] = lower
+    df['momentum'] = df['close'] - df['close'].shift(10)
+    # df['momentumo'] = talib.CMO(df['close'], timeperiod=14)
+    # rsi 구하기
+    delta = df['close'].diff()
+    gains, declines = delta.copy(), delta.copy()
+    gains[gains < 0] = 0
+    declines[declines >0] = 0
+    _gain = gains.ewm(com=13, min_periods=14).mean()
+    _lose = declines.abs().ewm(com=13, min_periods=14).mean()
+    RS = _gain/_lose
+    df['rsi'] = (100 - (100 / (1+RS)))
+
+
     return df
+# cal = calindicator("KRW-ADA")
+# print(cal['momentum'])
+# print(cal['RSI'])
+# print(cal['momentumo'])
+# print(cal['macd'])
+# print(cal['macds'])
+# print(cal['macdo'])
 
 def get_balance(ticker):
     """잔고 조회"""
@@ -127,7 +149,7 @@ while True:
         momen = indicator['momentum']
 
 
-        if momen[-2] <5 and momen[-1] > 5:
+        if momen[-2] <= 0 and momen[-1] > 0:
             if not has_item(code):
                 if krw > 5000:
                     upbit.buy_market_order(ticker, krw*0.9995)
@@ -136,7 +158,7 @@ while True:
             ada = get_balance(code)
             if has_item(code):
                 dif_rate = (((current_price * ada) - (avg * ada)) / (avg * ada)) * 100
-                if dif_rate < -2 or dif_rate > 0.5:
+                if dif_rate < -1.5 or dif_rate > 0.5:
                     if (ada * current_price) > 5000:
                         upbit.sell_market_order(ticker, ada)
                         print('매도!!')
@@ -154,11 +176,3 @@ while True:
         print(e)
         time.sleep(1)
 
-# psar = get_psar('KRW-ADA')
-# df = pd.DataFrame(upbit.get_balances())
-# print(psar)
-
-# print(upbit.get_balances())
-# df = pd.DataFrame(upbit.get_balances())
-# print(df)
-# print(df['currency'][1])
