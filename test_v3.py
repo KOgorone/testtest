@@ -7,8 +7,9 @@ import pandas as pd
 import datetime
 import pandas
 
-access = "fxK"
-secret = "fuK"
+
+access = "jF3BxK"
+secret = "jaE2uK"
 
 def get_target_price(ticker, k):
     """변동성 돌파 전략으로 매수 목표가 조회"""
@@ -164,6 +165,7 @@ while True:
 #         print(e)
 #         time.sleep(1)
 #
+
         ticker = "KRW-ADA"
         code = ticker[4:]
         current_price = get_current_price(ticker)
@@ -189,17 +191,18 @@ while True:
                         print('매도!!')
                 else:
                     print("젭알... 올라라")
-
+            else:
+                print("wait....")
         elif has_item(code):
             print("더더 올라라...")
-  
+
 
         ticker2 = "KRW-XRP"
         code2 = ticker2[4:]
-        current_price2 = get_current_price(ticker2)
+        current_price = get_current_price(ticker2)
         indicator2 = calindicator2(ticker2)
         avg = get_balance_avg(code2)
-        xrp = get_balance(code2)
+        ada = get_balance(code)
         krw = get_balance("KRW")
 
 
@@ -211,7 +214,7 @@ while True:
         elif indicator2['slow_k'][-1]-indicator2['slow_d'][-1] < 0 and indicator2['slow_k'][-2]-indicator2['slow_d'][-2] > 0:
             xrp = get_balance(code2)
             if has_item(code2):
-                dif_rate = (((current_price2 * xrp) - (avg * xrp)) / (avg * xrp)) * 100
+                dif_rate = (((current_price * xrp) - (avg * xrp)) / (avg * xrp)) * 100
                 if dif_rate < -3 or dif_rate > 0.5:
                     if (xrp * current_price) > 5000:
                         upbit.sell_market_order(ticker2, xrp)
