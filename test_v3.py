@@ -8,8 +8,8 @@ import datetime
 import pandas
 import talib
 
-access = "pZuOj1PKWP8vnijaCtnllsAdFHl7u1NZFu9F3BxK"
-secret = "tidRwi75358bTdvgIKdmTrEZy6LK3vICJgKaE2uK"
+access = "d3BxK"
+secret = "duK"
 
 def get_target_price(ticker, k):
     """변동성 돌파 전략으로 매수 목표가 조회"""
