@@ -179,7 +179,7 @@ while True:
         if momen[-2] <= 0 and momen[-1] > 0:
             if not has_item(code):
                 if krw > 5000:
-                    upbit.buy_market_order(ticker, krw*0.9995)
+                    upbit.buy_market_order(ticker, 10000)
                     print("매수!!")
         elif (indicator['macd'][-1] < indicator['macd'][-2]):
             ada = get_balance(code)
