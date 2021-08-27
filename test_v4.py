@@ -6,10 +6,10 @@ import pyupbit
 import pandas as pd
 import datetime
 import pandas
-
+import talib
 
 access = "3BxK"
-secret = "2uK"
+secret = "KaE2uK"
 
 def get_target_price(ticker, k):
     """변동성 돌파 전략으로 매수 목표가 조회"""
@@ -30,7 +30,7 @@ def get_ma15(ticker):
     return ma15
 # 기술지표 구하기
 def calindicator(ticker):
-    df = pyupbit.get_ohlcv(ticker, interval="minute240", count=70)
+    df = pyupbit.get_ohlcv(ticker, interval="minute240", count=200)
     df['ma5'] = df['close'].rolling(window=5).mean()
     df['ma20'] = df['close'].rolling(window=20).mean()
     df['ma60'] = df['close'].rolling(window=60).mean()
@@ -55,8 +55,8 @@ def calindicator(ticker):
     L = df["low"].rolling(window=14).min()
     H = df["high"].rolling(window=14).max()
     df['fast_k'] = ((df["close"] - L) / (H - L)) * 100
-    df['slow_k'] = df['fast_k'].ewm(span=3).mean()
-    df['slow_d'] = df['slow_k'].ewm(span=3).mean()
+    df['slow_k'] = df['fast_k'].rolling(window=3).mean()
+    df['slow_d'] = df['slow_k'].rolling(window=3).mean()
 
     return df
 
@@ -105,6 +105,27 @@ def get_current_price(ticker):
 # 로그인
 upbit = pyupbit.Upbit(access, secret)
 print("autotrade start")
+#매도 하는 곳
+# for i in range(1, len(upbit.get_balances())):
+#     code = upbit.get_balances()[i]['currency']
+#     ticker = ('KRW-'+code)
+#     indicator = calindicator(ticker)
+#     current_price = get_current_price(ticker)
+#     avg = get_balance_avg(code)
+#     sell = get_balance(code)
+#     krw = get_balance("KRW")
+#     if indicator['slow_k'][-1] - indicator['slow_d'][-1] < 0 and indicator['slow_k'][-2] - indicator['slow_d'][-2] > 0:
+#         dif_rate = (((current_price * sell) - (avg * sell)) / (avg * sell)) * 100
+#         if dif_rate < -3 :
+#             if (sell * current_price) > 5000:
+#                 upbit.sell_market_order(ticker, sell)
+#                 print(f'{ticker}매도!!')
+#         elif dif_rate > 0 :
+#             if (sell * current_price) > 5000:
+#                 upbit.sell_market_order(ticker, sell)
+#                 print(f'{ticker}매도!!')
+#         else:
+#             print(f"{ticker} 확인완료....")
 
 # 자동매매 시작
 while True:
@@ -132,9 +153,9 @@ while True:
 #     except Exception as e:
 #         print(e)
 #         time.sleep(1)
-#
+
         # tickers = pyupbit.get_tickers(fiat="KRW")
-        tickers = ["KRW-ADA", "KRW-XRP", "KRW-XEM"]
+        tickers = ["KRW-ADA", "KRW-SAND", "KRW-XEM"]
         for i in range(len(tickers)):
             ticker = tickers[i]
             code = ticker[4:]
