@@ -157,6 +157,10 @@ while True:
                         if (xrp * current_price) > 5000:
                             upbit.sell_market_order(ticker, xrp)
                             print('매도!!')
+                    elif dif_rate > 0:
+                        if (xrp * current_price) > 5000:
+                            upbit.sell_market_order(ticker, sell)
+                            print(f'{ticker}매도!!')
                     else:
                         print(f"{ticker}젭알... 올라라")
                 else:
