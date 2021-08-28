@@ -6,10 +6,46 @@ import pyupbit
 import pandas as pd
 import datetime
 import pandas
-import talib
+import requests
 
-access = "3BxK"
-secret = "KaE2uK"
+access = "pZuOj1PKWP8vnijaCtnllsAdFHl7u1NZFu9F3BxK"
+secret = "tidRwi75358bTdvgIKdmTrEZy6LK3vICJgKaE2uK"
+
+def _parse_remaining_req(remaining_req):
+    """
+
+    :param remaining_req:
+    :return:
+    """
+    try:
+        p = re.compile("group=([a-z]+); min=([0-9]+); sec=([0-9]+)")
+        m = p.search(remaining_req)
+        return m.group(1), int(m.group(2)), int(m.group(3))
+    except:
+        return None, None, None
+
+
+def _call_public_api(url, **kwargs):
+    """
+
+    :param url:
+    :param kwargs:
+    :return:
+    """
+    try:
+        resp = requests.get(url, params=kwargs)
+        remaining_req_dict = {}
+        remaining_req = resp.headers.get('Remaining-Req')
+        if remaining_req is not None:
+            group, min, sec = _parse_remaining_req(remaining_req)
+            remaining_req_dict['group'] = group
+            remaining_req_dict['min'] = min
+            remaining_req_dict['sec'] = sec
+        contents = resp.json()
+        return contents, remaining_req_dict
+    except Exception as x:
+        print("It failed", x.__class__.__name__)
+        return None
 
 def get_target_price(ticker, k):
     """변동성 돌파 전략으로 매수 목표가 조회"""
@@ -30,27 +66,27 @@ def get_ma15(ticker):
     return ma15
 # 기술지표 구하기
 def calindicator(ticker):
-    df = pyupbit.get_ohlcv(ticker, interval="minute240", count=200)
-    df['ma5'] = df['close'].rolling(window=5).mean()
-    df['ma20'] = df['close'].rolling(window=20).mean()
-    df['ma60'] = df['close'].rolling(window=60).mean()
+    df = pyupbit.get_ohlcv(ticker, interval="minute240", count=20)
+    # df['ma5'] = df['close'].rolling(window=5).mean()
+    # df['ma20'] = df['close'].rolling(window=20).mean()
+    # df['ma60'] = df['close'].rolling(window=60).mean()
 
-    df['ma12'] = round(df['close'].ewm(span=12).mean(), 2)
-    df['ma26'] = round(df['close'].ewm(span=26).mean(), 2)
-    df['macd'] = round(df.apply(lambda x: (x['ma12'] - x['ma26']), axis=1), 2)
-    df['macds'] = round(df['macd'].ewm(span=9).mean(), 2)
-    df['macdo'] = round(df['macd'] - df['macds'], 2)
+    # df['ma12'] = round(df['close'].ewm(span=12).mean(), 2)
+    # df['ma26'] = round(df['close'].ewm(span=26).mean(), 2)
+    # df['macd'] = round(df.apply(lambda x: (x['ma12'] - x['ma26']), axis=1), 2)
+    # df['macds'] = round(df['macd'].ewm(span=9).mean(), 2)
+    # df['macdo'] = round(df['macd'] - df['macds'], 2)
 
-    df['momentum'] = df['close'] - df['close'].shift(10)
+    # df['momentum'] = df['close'] - df['close'].shift(10)
 
-    delta = df['close'].diff()
-    gains, declines = delta.copy(), delta.copy()
-    gains[gains < 0] = 0
-    declines[declines >0] = 0
-    _gain = gains.ewm(com=13, min_periods=14).mean()
-    _lose = declines.abs().ewm(com=13, min_periods=14).mean()
-    RS = _gain/_lose
-    df['rsi'] = (100 - (100 / (1+RS)))
+    # delta = df['close'].diff()
+    # gains, declines = delta.copy(), delta.copy()
+    # gains[gains < 0] = 0
+    # declines[declines >0] = 0
+    # _gain = gains.ewm(com=13, min_periods=14).mean()
+    # _lose = declines.abs().ewm(com=13, min_periods=14).mean()
+    # RS = _gain/_lose
+    # df['rsi'] = (100 - (100 / (1+RS)))
 
     L = df["low"].rolling(window=14).min()
     H = df["high"].rolling(window=14).max()
@@ -83,6 +119,7 @@ def get_balance_avg(ticker):
     return 0
 
 
+
 #보유 유무 확인
 def has_item(ticker):
     df = pd.DataFrame(upbit.get_balances())
@@ -100,61 +137,40 @@ def get_current_price(ticker):
     """현재가 조회"""
     return pyupbit.get_orderbook(tickers=ticker)[0]["orderbook_units"][0]["ask_price"]
 
+def get_trade_vol(ticker):
+    """
+    최종 체결 가격 조회 (현재가)
+    :param ticker:
+    :return:
+    """
+    try:
+        url = "https://api.upbit.com/v1/ticker"
+        contents = _call_public_api(url, markets=ticker)[0]
+        if not contents:
+            return None
 
+        if isinstance(ticker, list):
+            ret = {}
+            for content in contents:
+                market = content['market']
+                price = content['acc_trade_price_24h']
+                ret[market] = price
+            return ret
+        else:
+            return contents[0]['acc_trade_price_24h']
+    except Exception as x:
+        print(x.__class__.__name__)
 
 # 로그인
 upbit = pyupbit.Upbit(access, secret)
 print("autotrade start")
-#매도 하는 곳
-# for i in range(1, len(upbit.get_balances())):
-#     code = upbit.get_balances()[i]['currency']
-#     ticker = ('KRW-'+code)
-#     indicator = calindicator(ticker)
-#     current_price = get_current_price(ticker)
-#     avg = get_balance_avg(code)
-#     sell = get_balance(code)
-#     krw = get_balance("KRW")
-#     if indicator['slow_k'][-1] - indicator['slow_d'][-1] < 0 and indicator['slow_k'][-2] - indicator['slow_d'][-2] > 0:
-#         dif_rate = (((current_price * sell) - (avg * sell)) / (avg * sell)) * 100
-#         if dif_rate < -3 :
-#             if (sell * current_price) > 5000:
-#                 upbit.sell_market_order(ticker, sell)
-#                 print(f'{ticker}매도!!')
-#         elif dif_rate > 0 :
-#             if (sell * current_price) > 5000:
-#                 upbit.sell_market_order(ticker, sell)
-#                 print(f'{ticker}매도!!')
-#         else:
-#             print(f"{ticker} 확인완료....")
+
+
 
 # 자동매매 시작
 while True:
     try:
-#         ticker = "KRW-ADA"
-#         code = ticker[4:]
-#         now = datetime.datetime.now()
-#         start_time = get_start_time(ticker)
-#         end_time = start_time + datetime.timedelta(minutes=10)
-#
-#
-#         if start_time < now < end_time - datetime.timedelta(seconds=10):
-#             target_price = get_target_price(ticker, 0.5)
-#             ma15 = get_ma15(ticker)
-#             current_price = get_current_price(ticker)
-#             if target_price < current_price and ma15 < current_price:
-#                 krw = get_balance("KRW")
-#                 if krw > 5000:
-#                     upbit.buy_market_order(ticker, krw*0.9995)
-#         else:
-#             btc = get_balance(code)
-#             if btc > 0.00008:
-#                 upbit.sell_market_order(ticker, code)
-#         time.sleep(1)
-#     except Exception as e:
-#         print(e)
-#         time.sleep(1)
 
-        # tickers = pyupbit.get_tickers(fiat="KRW")
         tickers = ["KRW-ADA", "KRW-SAND", "KRW-XEM"]
         for i in range(len(tickers)):
             ticker = tickers[i]
@@ -164,55 +180,40 @@ while True:
             avg = get_balance_avg(code)
             ada = get_balance(code)
             krw = get_balance("KRW")
+            xrp = get_balance(code)
 
-            if indicator['slow_k'][-1] - indicator['slow_d'][-1] > 0 and indicator['slow_k'][-2] - indicator['slow_d'][-2] < 0:
-                if not has_item(code):
+            if not has_item(code):
+                if indicator['slow_k'][-1] - indicator['slow_d'][-1] > 0 and indicator['slow_k'][-2] - indicator['slow_d'][-2] < 0:
                     if krw > 50000:
                         upbit.buy_market_order(ticker, 10000)
-                        print("매수!!")
-            elif indicator['slow_k'][-1] - indicator['slow_d'][-1] < 0 and indicator['slow_k'][-2] - indicator['slow_d'][-2] > 0:
-                xrp = get_balance(code)
-                if has_item(code):
-                    dif_rate = (((current_price * xrp) - (avg * xrp)) / (avg * xrp)) * 100
+                        print(f"{ticker}매수!!")
+                else:
+                    print(f"{ticker} 확인완료....")
+            elif has_item(code):
+                dif_rate = (((current_price * xrp) - (avg * xrp)) / (avg * xrp)) * 100
+                if indicator['slow_k'][-1] - indicator['slow_d'][-1] < 0 and indicator['slow_k'][-2] - indicator['slow_d'][-2] > 0:
                     if dif_rate < -3 :
                         if (xrp * current_price) > 5000:
                             upbit.sell_market_order(ticker, xrp)
-                            print('매도!!')
+                            print(f'{ticker}손절매도!!')
                     elif dif_rate > 0:
                         if (xrp * current_price) > 5000:
                             upbit.sell_market_order(ticker, xrp)
-                            print(f'{ticker}매도!!')
+                            print(f'{ticker}익절매도!!')
                     else:
                         print(f"{ticker}젭알... 올라라")
+                elif dif_rate < -3:
+                    if (xrp * current_price) > 5000:
+                        upbit.sell_market_order(ticker, xrp)
+                        print(f'{ticker}익절매도!!')
                 else:
-                    print("wait....")
-            elif has_item(code):
-                print(f"{ticker}더더 올라라...")
+                    print(f"{ticker} 더 올라라....")
+
+
             else:
                 print(f"{ticker} 확인완료....")
 
             time.sleep(0.6)
-            # if momen[-2] <= 0 and momen[-1] > 0:
-            #     if not has_item(code):
-            #         if krw > 5000:
-            #             upbit.buy_market_order(ticker, 10000)
-            #             print("매수!!")
-            # elif (indicator['macd'][-1] < indicator['macd'][-2]):
-            #     ada = get_balance(code)
-            #     if has_item(code):
-            #         dif_rate = (((current_price * ada) - (avg * ada)) / (avg * ada)) * 100
-            #         if dif_rate < -1.5 or dif_rate > 0.5:
-            #             if (ada * current_price) > 5000:
-            #                 upbit.sell_market_order(ticker, ada)
-            #                 print('매도!!')
-            #         else:
-            #             print("젭알... 올라라")
-            #     else:
-            #         print("wait....")
-            # elif has_item(code):
-            #     print("더더 올라라...")
-
-
 
     except Exception as e:
         print(e)
