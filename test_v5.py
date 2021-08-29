@@ -8,8 +8,8 @@ import datetime
 import pandas
 import requests
 
-access = "pZ3BxK"
-secret = "t2uK"
+access = "xK"
+secret = "tK"
 
 def _parse_remaining_req(remaining_req):
     """
@@ -67,6 +67,26 @@ def get_ma15(ticker):
 # 기술지표 구하기
 def calindicator(ticker):
     df = pyupbit.get_ohlcv(ticker, interval="minute240", count=20)
+    # df['ma5'] = df['close'].rolling(window=5).mean()
+    # df['ma20'] = df['close'].rolling(window=20).mean()
+    # df['ma60'] = df['close'].rolling(window=60).mean()
+
+    # df['ma12'] = round(df['close'].ewm(span=12).mean(), 2)
+    # df['ma26'] = round(df['close'].ewm(span=26).mean(), 2)
+    # df['macd'] = round(df.apply(lambda x: (x['ma12'] - x['ma26']), axis=1), 2)
+    # df['macds'] = round(df['macd'].ewm(span=9).mean(), 2)
+    # df['macdo'] = round(df['macd'] - df['macds'], 2)
+
+    # df['momentum'] = df['close'] - df['close'].shift(10)
+
+    # delta = df['close'].diff()
+    # gains, declines = delta.copy(), delta.copy()
+    # gains[gains < 0] = 0
+    # declines[declines >0] = 0
+    # _gain = gains.ewm(com=13, min_periods=14).mean()
+    # _lose = declines.abs().ewm(com=13, min_periods=14).mean()
+    # RS = _gain/_lose
+    # df['rsi'] = (100 - (100 / (1+RS)))
 
     L = df["low"].rolling(window=14).min()
     H = df["high"].rolling(window=14).max()
@@ -191,7 +211,7 @@ while True:
                         print(f'{ticker}손절매도!!')
                 else:
                     print(f"{ticker} 매도여부 확인완료....")
-            time.sleep(0.05)
+            time.sleep(0.06)
         print('전체 보유 확인완료')
 
         # 매수 종목 선택
@@ -209,7 +229,7 @@ while True:
                 df_temp['currency'] = ticker
                 df_temp['trade_vol'] = get_trade_vol(ticker)
                 df = df.append(df_temp)
-                time.sleep(0.04)
+                time.sleep(0.06)
 
         df.set_index('currency', inplace=True)
         df = df.sort_values(by='trade_vol', ascending=False).head(60)
@@ -234,11 +254,11 @@ while True:
             else:
                 print(f"{ticker} 보유중....")
 
-            time.sleep(0.05)
+            time.sleep(0.06)
 
         print('매수종목 확인완료')
 
     except Exception as e:
         print(e)
-        time.sleep(1)
+        time.sleep(0.6)
 
