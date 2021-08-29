@@ -187,8 +187,6 @@ while True:
                 print(f'{ticker} pass')
             elif code == 'ENJ':
                 print(f'{ticker} pass')
-            elif code == 'XRP':
-                print(f'{ticker} pass')
             elif code == 'IQ':
                 print(f'{ticker} pass')
             elif has_item(code):
@@ -196,12 +194,12 @@ while True:
                 avg = get_balance_avg(code)
                 sell = get_balance(code)
                 dif_rate = (((current_price * sell) - (avg * sell)) / (avg * sell)) * 100
-                if indicator['slow_k'][-1] - indicator['slow_d'][-1] < 0 :
+                if indicator['slow_k'][-1] - indicator['slow_d'][-1] < 0 and indicator['slow_k'][-2] - indicator['slow_d'][-2] > 0:
                     if dif_rate > 0.3:
                         if (sell * current_price) > 5000:
                             upbit.sell_market_order(ticker, sell)
                             print(f'{ticker}few profit sell!!')
-                    if dif_rate < -3:
+                    elif dif_rate < -3:
                         if (sell * current_price) > 5000:
                             upbit.sell_market_order(ticker, sell)
                             print(f'{ticker}loss sell!!')
