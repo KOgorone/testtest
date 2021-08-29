@@ -8,8 +8,8 @@ import datetime
 import pandas
 import requests
 
-access = "xK"
-secret = "tK"
+access = "3BxK"
+secret = "aE2uK"
 
 def _parse_remaining_req(remaining_req):
     """
@@ -184,13 +184,13 @@ while True:
 
 
             if code == 'SXP':
-                print(f'{ticker} 패스')
+                print(f'{ticker} pass')
             elif code == 'ENJ':
-                print(f'{ticker} 패스')
+                print(f'{ticker} pass')
             elif code == 'XRP':
-                print(f'{ticker} 패스')
+                print(f'{ticker} pass')
             elif code == 'IQ':
-                print(f'{ticker} 패스')
+                print(f'{ticker} pass')
             elif has_item(code):
                 current_price = get_current_price(ticker)
                 avg = get_balance_avg(code)
@@ -200,19 +200,19 @@ while True:
                     if dif_rate > 0.3:
                         if (sell * current_price) > 5000:
                             upbit.sell_market_order(ticker, sell)
-                            print(f'{ticker}익절매도!!')
+                            print(f'{ticker}few profit sell!!')
                     if dif_rate < -3:
                         if (sell * current_price) > 5000:
                             upbit.sell_market_order(ticker, sell)
-                            print(f'{ticker}손절매도!!')
+                            print(f'{ticker}loss sell!!')
                 elif dif_rate < -3:
                     if (sell * current_price) > 5000:
                         upbit.sell_market_order(ticker, sell)
-                        print(f'{ticker}손절매도!!')
+                        print(f'{ticker}lose sell!!')
                 else:
-                    print(f"{ticker} 매도여부 확인완료....")
+                    print(f"{ticker} selling check....")
             time.sleep(0.06)
-        print('전체 보유 확인완료')
+        print('balances check complete')
 
         # 매수 종목 선택
         tickers = pyupbit.get_tickers(fiat='KRW')
@@ -247,16 +247,16 @@ while True:
                 if indicator['slow_k'][-1] - indicator['slow_d'][-1] > 0 and indicator['slow_k'][-2] - indicator['slow_d'][-2] < 0:
                     if krw > 500000:
                         upbit.buy_market_order(ticker, 30000)
-                        print(f"{ticker}매수!!")
+                        print(f"{ticker}buy!!")
                 else:
-                    print(f'{ticker} 확인!!')
+                    print(f'{ticker} confirm!!')
 
             else:
-                print(f"{ticker} 보유중....")
+                print(f"{ticker} keeping....")
 
             time.sleep(0.06)
 
-        print('매수종목 확인완료')
+        print('buylist check complete')
 
     except Exception as e:
         print(e)
