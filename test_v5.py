@@ -8,8 +8,8 @@ import datetime
 import pandas
 import requests
 
-access = "pZuOK"
-secret = "ti2uK"
+access = "pxK"
+secret = "t2uK"
 
 def _parse_remaining_req(remaining_req):
     """
@@ -71,11 +71,11 @@ def calindicator(ticker):
     # df['ma20'] = df['close'].rolling(window=20).mean()
     # df['ma60'] = df['close'].rolling(window=60).mean()
 
-    # df['ma12'] = round(df['close'].ewm(span=12).mean(), 2)
-    # df['ma26'] = round(df['close'].ewm(span=26).mean(), 2)
-    # df['macd'] = round(df.apply(lambda x: (x['ma12'] - x['ma26']), axis=1), 2)
-    # df['macds'] = round(df['macd'].ewm(span=9).mean(), 2)
-    # df['macdo'] = round(df['macd'] - df['macds'], 2)
+    df['ma12'] = round(df['close'].ewm(span=12).mean(), 2)
+    df['ma26'] = round(df['close'].ewm(span=26).mean(), 2)
+    df['macd'] = round(df.apply(lambda x: (x['ma12'] - x['ma26']), axis=1), 2)
+    df['macds'] = round(df['macd'].ewm(span=9).mean(), 2)
+    df['macdo'] = round(df['macd'] - df['macds'], 2)
 
     # df['momentum'] = df['close'] - df['close'].shift(10)
 
@@ -197,8 +197,17 @@ while True:
                 avg = get_balance_avg(code)
                 sell = get_balance(code)
                 dif_rate = (((current_price * sell) - (avg * sell)) / (avg * sell)) * 100
-                if indicator['slow_k'][-1] - indicator['slow_k'][-2] < 0:
-                    if dif_rate > 0.5:
+                if indicator['macd'][-2] - indicator['macd'][-1] > 0 and indicator['macd'][-1] - indicator['macds'][-1] > 0:
+                    if dif_rate > 0.3:
+                        if (sell * current_price) > 5000:
+                            upbit.sell_market_order(ticker, sell)
+                            print(f'{ticker}few profit sell!!')
+                    elif dif_rate < -3:
+                        if (sell * current_price) > 5000:
+                            upbit.sell_market_order(ticker, sell)
+                            print(f'{ticker}loss sell!!')
+                elif indicator['slow_k'][-1] - indicator['slow_k'][-2] < 0:
+                    if dif_rate > 0.3:
                         if (sell * current_price) > 5000:
                             upbit.sell_market_order(ticker, sell)
                             print(f'{ticker}few profit sell!!')
@@ -260,7 +269,16 @@ while True:
                         avg = get_balance_avg(code)
                         sell = get_balance(code)
                         dif_rate = (((current_price * sell) - (avg * sell)) / (avg * sell)) * 100
-                        if indicator['slow_k'][-1] - indicator['slow_k'][-2] < 0:
+                        if indicator['macd'][-2] - indicator['macd'][-1] > 0 and indicator['macd'][-1] - indicator['macds'][-1] > 0:
+                            if dif_rate > 0.3:
+                                if (sell * current_price) > 5000:
+                                    upbit.sell_market_order(ticker, sell)
+                                    print(f'{ticker}few profit sell!!')
+                            elif dif_rate < -3:
+                                if (sell * current_price) > 5000:
+                                    upbit.sell_market_order(ticker, sell)
+                                    print(f'{ticker}loss sell!!')
+                        elif indicator['slow_k'][-1] - indicator['slow_k'][-2] < 0:
                             if dif_rate > 0.5:
                                 if (sell * current_price) > 5000:
                                     upbit.sell_market_order(ticker, sell)
