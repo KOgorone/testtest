@@ -8,8 +8,8 @@ import datetime
 import pandas
 import requests
 
-access = "xK"
-secret = "uK"
+access = "pxK"
+secret = "tiK"
 
 def _parse_remaining_req(remaining_req):
     """
@@ -205,7 +205,7 @@ while True:
                 avg = get_balance_avg(code)
                 sell = get_balance(code)
                 dif_rate = (((current_price * sell) - (avg * sell)) / (avg * sell)) * 100
-                if indicator['slow_k'][-1] - indicator['slow_d'][-1] < 0:
+                if indicator['slow_k'][-1] - indicator['slow_k'][-2] < 0:
                     if dif_rate > 0.5:
                         if (sell * current_price) > 5000:
                             upbit.sell_market_order(ticker, sell)
@@ -268,7 +268,7 @@ while True:
                         avg = get_balance_avg(code)
                         sell = get_balance(code)
                         dif_rate = (((current_price * sell) - (avg * sell)) / (avg * sell)) * 100
-                        if indicator['slow_k'][-1] - indicator['slow_d'][-1] < 0:
+                        if indicator['slow_k'][-1] - indicator['slow_k'][-2] < 0:
                             if dif_rate > 0.5:
                                 if (sell * current_price) > 5000:
                                     upbit.sell_market_order(ticker, sell)
