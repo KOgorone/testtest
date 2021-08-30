@@ -8,8 +8,8 @@ import datetime
 import pandas
 import requests
 
-access = "pK"
-secret = "tE2uK"
+access = "pZuOj1PKWP8vnijaCtnllsAdFHl7u1NZFu9F3BxK"
+secret = "tidRwi75358bTdvgIKdmTrEZy6LK3vICJgKaE2uK"
 
 def _parse_remaining_req(remaining_req):
     """
@@ -243,41 +243,6 @@ while True:
             code = ticker[4:]
             current_price = get_current_price(ticker)
             krw = get_balance("KRW")
-            if i == 30:
-                for j in range(1, len(upbit.get_balances())):
-                    code = upbit.get_balances()[j]['currency']
-                    ticker = ('KRW-' + code)
-                    indicator = calindicator(ticker)
-
-                    if code == 'SXP':
-                        print(f'{ticker} pass')
-                    elif code == 'ENJ':
-                        print(f'{ticker} pass')
-                    elif code == 'IQ':
-                        print(f'{ticker} pass')
-                    elif has_item(code):
-                        current_price = get_current_price(ticker)
-                        avg = get_balance_avg(code)
-                        sell = get_balance(code)
-                        dif_rate = (((current_price * sell) - (avg * sell)) / (avg * sell)) * 100
-                        if indicator['slow_k'][-1] - indicator['slow_k'][-2] < 0:
-                            if dif_rate > 0.5:
-                                if (sell * current_price) > 5000:
-                                    upbit.sell_market_order(ticker, sell)
-                                    print(f'{ticker}few profit sell!!')
-                            elif dif_rate < -3:
-                                if (sell * current_price) > 5000:
-                                    upbit.sell_market_order(ticker, sell)
-                                    print(f'{ticker}loss sell!!')
-                        elif dif_rate < -3:
-                            if (sell * current_price) > 5000:
-                                upbit.sell_market_order(ticker, sell)
-                                print(f'{ticker}lose sell!!')
-                        else:
-                            print(f"{ticker} selling check....")
-                    time.sleep(0.06)
-                print('balances check complete')
-
             if not has_item(code):
                 buy_macd = macd(ticker)
                 if buy_macd(ticker)['macdo'][-1] - buy_macd(ticker)['macdo'][-2] > 0:
