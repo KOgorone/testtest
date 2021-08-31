@@ -8,8 +8,8 @@ import datetime
 import pandas
 import requests
 
-access = "pBxK"
-secret = "ti2uK"
+access = "pZuOj1PKWP8vnijaCtnllsAdFHl7u1NZFu9F3BxK"
+secret = "tidRwi75358bTdvgIKdmTrEZy6LK3vICJgKaE2uK"
 
 def _parse_remaining_req(remaining_req):
     """
@@ -185,6 +185,7 @@ while True:
             ticker = ('KRW-' + code)
             indicator = calindicator(ticker)
             clo = indicator['close']
+            range = (indicator['high'][-2] - indicator['low'][-2]) / 2
 
             if code == 'SXP':
                 print(f'{ticker} pass')
