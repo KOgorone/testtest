@@ -8,8 +8,8 @@ import datetime
 import pandas
 import requests
 
-access = "p3BxK"
-secret = "tidKaE2uK"
+access = "pxK"
+secret = "t2uK"
 
 def _parse_remaining_req(remaining_req):
     """
@@ -197,7 +197,7 @@ while True:
                 avg = get_balance_avg(code)
                 sell = get_balance(code)
                 dif_rate = (((current_price * sell) - (avg * sell)) / (avg * sell)) * 100
-                if indicator['slow_k'][-1] - indicator['slow_d'][-1] < 0 and indicator['slow_k'][-2] - indicator['slow_d'][-2] < 0:
+                if indicator['slow_k'][-1] - indicator['slow_d'][-1] < 0 and indicator['slow_k'][-2] - indicator['slow_d'][-2] > 0:
                     if dif_rate > 0.3:
                         if (sell * current_price) > 5000:
                             upbit.sell_market_order(ticker, sell)
@@ -206,6 +206,8 @@ while True:
                         if (sell * current_price) > 5000:
                             upbit.sell_market_order(ticker, sell)
                             print(f'{ticker}loss sell!!')
+                    else:
+                        print(f"{ticker} selling check....")
                 elif clo[-1] - (clo[-2] - indicator['range'][-2]) < 0:
                     if dif_rate > 0.3:
                         if (sell * current_price) > 5000:
@@ -215,6 +217,8 @@ while True:
                         if (sell * current_price) > 5000:
                             upbit.sell_market_order(ticker, sell)
                             print(f'{ticker}loss sell!!')
+                    else:
+                        print(f"{ticker} selling check....")
                 elif dif_rate < -3:
                     if (sell * current_price) > 5000:
                         upbit.sell_market_order(ticker, sell)
@@ -252,7 +256,7 @@ while True:
             code = ticker[4:]
             current_price = get_current_price(ticker)
             krw = get_balance("KRW")
-            if i == 30:
+            if i == 15 or i == 30:
                 for j in range(1, len(upbit.get_balances())):
                     code = upbit.get_balances()[j]['currency']
                     ticker = ('KRW-' + code)
@@ -270,7 +274,7 @@ while True:
                         avg = get_balance_avg(code)
                         sell = get_balance(code)
                         dif_rate = (((current_price * sell) - (avg * sell)) / (avg * sell)) * 100
-                        if indicator['slow_k'][-1] - indicator['slow_d'][-1] < 0 and indicator['slow_k'][-2] - indicator['slow_d'][-2] < 0:
+                        if indicator['slow_k'][-1] - indicator['slow_d'][-1] < 0 and indicator['slow_k'][-2] - indicator['slow_d'][-2] > 0:
                             if dif_rate > 0.5:
                                 if (sell * current_price) > 5000:
                                     upbit.sell_market_order(ticker, sell)
@@ -279,6 +283,8 @@ while True:
                                 if (sell * current_price) > 5000:
                                     upbit.sell_market_order(ticker, sell)
                                     print(f'{ticker}loss sell!!')
+                            else:
+                                print(f"{ticker} selling check....")
                         elif clo[-1] - (clo[-2]-indicator['range'][-2])< 0:
                             if dif_rate > 0.3:
                                 if (sell * current_price) > 5000:
@@ -288,6 +294,8 @@ while True:
                                 if (sell * current_price) > 5000:
                                     upbit.sell_market_order(ticker, sell)
                                     print(f'{ticker}loss sell!!')
+                            else:
+                                print(f"{ticker} selling check....")
                         elif dif_rate < -3:
                             if (sell * current_price) > 5000:
                                 upbit.sell_market_order(ticker, sell)
