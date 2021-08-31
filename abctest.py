@@ -8,8 +8,8 @@ import datetime
 import pandas
 import requests
 
-access = "pxK"
-secret = "t2uK"
+access = "pZuOj1PKWP8vnijaCtnllsAdFHl7u1NZFu9F3BxK"
+secret = "tidRwi75358bTdvgIKdmTrEZy6LK3vICJgKaE2uK"
 
 def _parse_remaining_req(remaining_req):
     """
@@ -219,6 +219,15 @@ while True:
                             print(f'{ticker}loss sell!!')
                     else:
                         print(f"{ticker} selling check....")
+                elif indicator['slow_k'][-1] - indicator['slow_d'][-1] < 0 and indicator['slow_k'][-1] - indicator['slow_k'][-2] < 0:
+                    if dif_rate > 0.5:
+                        if (sell * current_price) > 5000:
+                            upbit.sell_market_order(ticker, sell)
+                            print(f'{ticker}few profit sell!!')
+                    elif dif_rate < -3:
+                        if (sell * current_price) > 5000:
+                            upbit.sell_market_order(ticker, sell)
+                            print(f'{ticker}lose sell!!')
                 elif dif_rate < -3:
                     if (sell * current_price) > 5000:
                         upbit.sell_market_order(ticker, sell)
@@ -275,7 +284,7 @@ while True:
                         sell = get_balance(code)
                         dif_rate = (((current_price * sell) - (avg * sell)) / (avg * sell)) * 100
                         if indicator['slow_k'][-1] - indicator['slow_d'][-1] < 0 and indicator['slow_k'][-2] - indicator['slow_d'][-2] > 0:
-                            if dif_rate > 0.5:
+                            if dif_rate > 0.3:
                                 if (sell * current_price) > 5000:
                                     upbit.sell_market_order(ticker, sell)
                                     print(f'{ticker}few profit sell!!')
@@ -296,6 +305,15 @@ while True:
                                     print(f'{ticker}loss sell!!')
                             else:
                                 print(f"{ticker} selling check....")
+                        elif indicator['slow_k'][-1] - indicator['slow_d'][-1] < 0 and indicator['slow_k'][-1] - indicator['slow_k'][-2] < 0:
+                            if dif_rate > 0.5:
+                                if (sell * current_price) > 5000:
+                                    upbit.sell_market_order(ticker, sell)
+                                    print(f'{ticker}few profit sell!!')
+                            elif dif_rate < -3:
+                                if (sell * current_price) > 5000:
+                                    upbit.sell_market_order(ticker, sell)
+                                    print(f'{ticker}lose sell!!')
                         elif dif_rate < -3:
                             if (sell * current_price) > 5000:
                                 upbit.sell_market_order(ticker, sell)
