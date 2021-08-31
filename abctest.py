@@ -8,8 +8,8 @@ import datetime
 import pandas
 import requests
 
-access = "pZxK"
-secret = "ti2uK"
+access = "p3BxK"
+secret = "tidKaE2uK"
 
 def _parse_remaining_req(remaining_req):
     """
@@ -66,7 +66,7 @@ def get_ma15(ticker):
     return ma15
 # 기술지표 구하기
 def calindicator(ticker):
-    df = pyupbit.get_ohlcv(ticker, interval="minute240", count=30)
+    df = pyupbit.get_ohlcv(ticker, interval="minute60", count=30)
     # df['ma5'] = df['close'].rolling(window=5).mean()
     # df['ma20'] = df['close'].rolling(window=20).mean()
     # df['ma60'] = df['close'].rolling(window=60).mean()
@@ -197,7 +197,7 @@ while True:
                 avg = get_balance_avg(code)
                 sell = get_balance(code)
                 dif_rate = (((current_price * sell) - (avg * sell)) / (avg * sell)) * 100
-                if indicator['slow_k'][-1] - indicator['slow_k'][-2] < 0:
+                if indicator['slow_k'][-1] - indicator['slow_d'][-1] < 0 and indicator['slow_k'][-2] - indicator['slow_d'][-2] < 0:
                     if dif_rate > 0.3:
                         if (sell * current_price) > 5000:
                             upbit.sell_market_order(ticker, sell)
@@ -270,7 +270,7 @@ while True:
                         avg = get_balance_avg(code)
                         sell = get_balance(code)
                         dif_rate = (((current_price * sell) - (avg * sell)) / (avg * sell)) * 100
-                        if indicator['slow_k'][-1] - indicator['slow_k'][-2] < 0:
+                        if indicator['slow_k'][-1] - indicator['slow_d'][-1] < 0 and indicator['slow_k'][-2] - indicator['slow_d'][-2] < 0:
                             if dif_rate > 0.5:
                                 if (sell * current_price) > 5000:
                                     upbit.sell_market_order(ticker, sell)
@@ -302,8 +302,8 @@ while True:
                 if buy_macd['macdo'][-1] - buy_macd['macdo'][-2] > 0:
                     indicator = calindicator(ticker)
                     if indicator['slow_k'][-1] - indicator['slow_d'][-1] > 0 and indicator['slow_k'][-2] - indicator['slow_d'][-2] < 0:
-                        if krw > 500000:
-                            upbit.buy_market_order(ticker, 30000)
+                        if krw > 600000:
+                            upbit.buy_market_order(ticker, 10000)
                             print(f"{ticker}buy!!")
                         else:
                             print(f'{ticker} money...')
