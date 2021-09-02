@@ -263,7 +263,7 @@ while True:
                 indicator = calindicator(ticker)
                 if indicator['macd'][-1] - indicator['macd'][-2] > 0 and indicator['macd'][-3] - indicator['macd'][-2] > 0:
                     if indicator['slow_k'][-1] - indicator['slow_k'][-2] > 0 :
-                        if krw > 600000:
+                        if krw > 400000:
                             upbit.buy_market_order(ticker, 10000)
                             print(f"{ticker}buy!!")
                         else:
