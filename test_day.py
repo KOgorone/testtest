@@ -8,8 +8,8 @@ import datetime
 import pandas
 import requests
 
-access = "pBxK"
-secret = "tidK"
+access = "pZxK"
+secret = "t2uK"
 
 def _parse_remaining_req(remaining_req):
     """
@@ -66,16 +66,17 @@ def get_ma15(ticker):
     return ma15
 # 기술지표 구하기
 def calindicator(ticker):
-    df = pyupbit.get_ohlcv(ticker, interval="day", count=30)
+    df = pyupbit.get_ohlcv(ticker, interval="day", count=200)
     # df['ma5'] = df['close'].rolling(window=5).mean()
     # df['ma20'] = df['close'].rolling(window=20).mean()
     # df['ma60'] = df['close'].rolling(window=60).mean()
 
-    df['ma12'] = round(df['close'].ewm(span=12).mean(), 2)
-    df['ma26'] = round(df['close'].ewm(span=26).mean(), 2)
-    df['macd'] = round(df.apply(lambda x: (x['ma12'] - x['ma26']), axis=1), 2)
-    df['macds'] = round(df['macd'].ewm(span=9).mean(), 2)
-    df['macdo'] = round(df['macd'] - df['macds'], 2)
+    df['ma12'] = df['close'].ewm(span=12).mean()
+    df['ma26'] = df['close'].ewm(span=26).mean()
+    # df['macd'] = df['ma12'] - df['ma26']
+    df['macd'] = df.apply(lambda x: (x['ma12'] - x['ma26']), axis=1)
+    df['macds'] = df['macd'].ewm(span=9).mean()
+    df['macdo'] = df['macd'] - df['macds']
 
     # df['momentum'] = df['close'] - df['close'].shift(10)
 
@@ -96,14 +97,15 @@ def calindicator(ticker):
     df['range'] = (df['high'] - df['low'])/2
     return df
 
-
-def macd(ticker):
-    df = pyupbit.get_ohlcv(ticker, interval="day", count=30)
-    df['ma12'] = round(df['close'].ewm(span=12).mean(), 2)
-    df['ma26'] = round(df['close'].ewm(span=26).mean(), 2)
-    df['macd'] = round(df.apply(lambda x: (x['ma12'] - x['ma26']), axis=1), 2)
-    df['macds'] = round(df['macd'].ewm(span=9).mean(), 2)
-    df['macdo'] = round(df['macd'] - df['macds'], 2)
+# asd = calindicator('KRW-ADA')
+# print(asd)
+# def macd(ticker):
+#     df = pyupbit.get_ohlcv(ticker, interval="day", count=30)
+#     df['ma12'] = round(df['close'].ewm(span=12).mean(), 2)
+#     df['ma26'] = round(df['close'].ewm(span=26).mean(), 2)
+#     df['macd'] = round(df.apply(lambda x: (x['ma12'] - x['ma26']), axis=1), 2)
+#     df['macds'] = round(df['macd'].ewm(span=9).mean(), 2)
+#     df['macdo'] = round(df['macd'] - df['macds'], 2)
     return df
 
 def get_balance(ticker):
@@ -180,34 +182,35 @@ while True:
 
         # 매수 종목 선택
         tickers = pyupbit.get_tickers(fiat='KRW')
-        for i in range(1, len(tickers)):
-            if i == 1:
-                ticker = tickers[i]
-                df = pyupbit.get_ohlcv(ticker, interval="day", count=1)
-                df['currency'] = ticker
-                df['trade_vol'] = get_trade_vol(ticker)
 
-            elif i != 1:
-                ticker = tickers[i]
-                df_temp = pyupbit.get_ohlcv(ticker, interval="day", count=1)
-                df_temp['currency'] = ticker
-                df_temp['trade_vol'] = get_trade_vol(ticker)
-                df = df.append(df_temp)
-                time.sleep(0.06)
-
-        df.set_index('currency', inplace=True)
-        df = df.sort_values(by='trade_vol', ascending=False).head(50)
-        df = df.reset_index(drop=False, inplace=False)
-        ticker_buy = df['currency']
+        # for i in range(1, len(tickers)):
+        #     if i == 1:
+        #         ticker = tickers[i]
+        #         df = pyupbit.get_ohlcv(ticker, interval="day", count=1)
+        #         df['currency'] = ticker
+        #         df['trade_vol'] = get_trade_vol(ticker)
+        #
+        #     elif i != 1:
+        #         ticker = tickers[i]
+        #         df_temp = pyupbit.get_ohlcv(ticker, interval="day", count=1)
+        #         df_temp['currency'] = ticker
+        #         df_temp['trade_vol'] = get_trade_vol(ticker)
+        #         df = df.append(df_temp)
+        #         time.sleep(0.06)
+        #
+        # df.set_index('currency', inplace=True)
+        # df = df.sort_values(by='trade_vol', ascending=False).head(50)
+        # df = df.reset_index(drop=False, inplace=False)
+        # ticker_buy = df['currency']
 
         # 매수시작
-        for i in range(len(df)):
-            ticker = ticker_buy[i]
+        for i in range(1, len(tickers)):
+            ticker = tickers[i]
             code = ticker[4:]
             current_price = get_current_price(ticker)
             krw = get_balance("KRW")
             # 매도 확인부터
-            if i == 0 or i == 15 or i == 30:
+            if i == 0 or i == 51:
                 for j in range(1, len(upbit.get_balances())):
                     code = upbit.get_balances()[j]['currency']
                     ticker = ('KRW-' + code)
@@ -263,7 +266,7 @@ while True:
                 indicator = calindicator(ticker)
                 if indicator['macd'][-1] - indicator['macd'][-2] > 0 and indicator['macd'][-3] - indicator['macd'][-2] > 0:
                     if indicator['slow_k'][-1] - indicator['slow_k'][-2] > 0 :
-                        if krw > 400000:
+                        if krw > 200000:
                             upbit.buy_market_order(ticker, 10000)
                             print(f"{ticker}buy!!")
                         else:
