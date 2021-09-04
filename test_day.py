@@ -9,7 +9,7 @@ import pandas
 import requests
 
 access = "pZxK"
-secret = "t2uK"
+secret = "tuK"
 
 def _parse_remaining_req(remaining_req):
     """
@@ -232,11 +232,11 @@ while True:
                             if dif_rate > 0.5:
                                 if (sell * current_price) > 5000:
                                     upbit.sell_market_order(ticker, sell)
-                                    print(f'{ticker}few profit sell!!')
+                                    print(f'{ticker} few profit sell!!')
                             elif dif_rate < -5:
                                 if (sell * current_price) > 5000:
                                     upbit.sell_market_order(ticker, sell)
-                                    print(f'{ticker}loss sell!!')
+                                    print(f'{ticker} loss sell!!')
                             else:
                                 print(f"{ticker} selling check....")
 
@@ -249,14 +249,14 @@ while True:
                                     elif dif_rate < -5:
                                         if (sell * current_price) > 5000:
                                             upbit.sell_market_order(ticker, sell)
-                                            print(f'{ticker}loss sell!!')
+                                            print(f'{ticker} loss sell!!')
                                 else:
                                     print(f"{ticker} selling check....")
 
                         elif dif_rate < -5:
                             if (sell * current_price) > 5000:
                                 upbit.sell_market_order(ticker, sell)
-                                print(f'{ticker}lose sell!!')
+                                print(f'{ticker} lose sell!!')
                         else:
                             print(f"{ticker} selling check....")
                     time.sleep(0.06)
@@ -268,14 +268,24 @@ while True:
                     if indicator['slow_k'][-1] - indicator['slow_k'][-2] > 0 :
                         if krw > 200000:
                             upbit.buy_market_order(ticker, 10000)
-                            print(f"{ticker}buy!!")
+                            print(f"{ticker} buy!!")
                         else:
                             print(f'{ticker} money...')
                     else:
                         print(f'{ticker} check!')
+                elif indicator['macd'][-1] - indicator['macd'][-2] > 0 and indicator['macd'][-2] - indicator['macd'][-3] > 0 and indicator['macd'][-4] - indicator['macd'][-3] > 0:
+                    if indicator['close'][-1] -(indicator['open'][-1] - indicator['range'][-1]) > 0:
+                        if indicator['slow_k'][-1] - indicator['slow_k'][-2] > 0 :
+                            if krw > 200000:
+                                upbit.buy_market_order(ticker, 10000)
+                                print(f"{ticker} buy!!")
+                            else:
+                                print(f'{ticker} money...')
+                        else:
+                            print(f'{ticker} check!')
 
-            else:
-                print(f"{ticker} keeping....")
+                else:
+                    print(f"{ticker} keeping....")
 
             time.sleep(0.06)
 
