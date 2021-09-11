@@ -8,8 +8,8 @@ import datetime
 import pandas
 import requests
 
-access = "pZxK"
-secret = "tiE2uK"
+access = "pZu3BxK"
+secret = "tid2uK"
 
 def _parse_remaining_req(remaining_req):
     """
@@ -94,7 +94,7 @@ def calindicator(ticker):
     df['fast_k'] = ((df["close"] - L) / (H - L)) * 100
     df['slow_k'] = df['fast_k'].rolling(window=3).mean()
     df['slow_d'] = df['slow_k'].rolling(window=3).mean()
-    df['range'] = (df['high'] - df['low'])*0.4
+    df['range'] = (df['high'] - df['low']) * 0.4
     return df
 
 # asd = calindicator('KRW-ADA')
@@ -210,7 +210,7 @@ while True:
             current_price = get_current_price(ticker)
             krw = get_balance("KRW")
             # 매도 확인부터
-            if i == 0 or i == 51:
+            if i == 1 or i == 33 or i == 66:
                 for j in range(1, len(upbit.get_balances())):
                     code = upbit.get_balances()[j]['currency']
                     ticker = ('KRW-' + code)
@@ -235,7 +235,7 @@ while True:
                                 print(f"{ticker} selling check....")
 
                         elif ((clo[-1] - indicator['open'][-1]) / indicator['open'][-1]) * 100 < -2 :
-                                if clo[-1] - (clo[-2]-indicator['range'][-2]) < 0:
+                                if clo[-1] - (indicator['open'][-1]-indicator['range'][-2]) < 0:
                                     if dif_rate > 0.5:
                                         if (sell * current_price) > 5000:
                                             upbit.sell_market_order(ticker, sell)
