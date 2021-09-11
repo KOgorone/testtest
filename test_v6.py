@@ -94,7 +94,7 @@ def calindicator(ticker):
     df['fast_k'] = ((df["close"] - L) / (H - L)) * 100
     df['slow_k'] = df['fast_k'].rolling(window=3).mean()
     df['slow_d'] = df['slow_k'].rolling(window=3).mean()
-    df['range'] = (df['high'] - df['low'])/2
+    df['range'] = (df['high'] - df['low'])*0.4
     return df
 
 # asd = calindicator('KRW-ADA')
