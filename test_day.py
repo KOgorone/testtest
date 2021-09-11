@@ -9,7 +9,7 @@ import pandas
 import requests
 
 access = "pZxK"
-secret = "tuK"
+secret = "tiuK"
 
 def _parse_remaining_req(remaining_req):
     """
@@ -94,7 +94,7 @@ def calindicator(ticker):
     df['fast_k'] = ((df["close"] - L) / (H - L)) * 100
     df['slow_k'] = df['fast_k'].rolling(window=3).mean()
     df['slow_d'] = df['slow_k'].rolling(window=3).mean()
-    df['range'] = (df['high'] - df['low'])/2
+    df['range'] = (df['high'] - df['low']) * 0.4
     return df
 
 # asd = calindicator('KRW-ADA')
@@ -217,13 +217,7 @@ while True:
                     indicator = calindicator(ticker)
                     clo = indicator['close']
                     time.sleep(0.02)
-                    if code == 'SXP':
-                        print(f'{ticker} pass')
-                    elif code == 'ENJ':
-                        print(f'{ticker} pass')
-                    elif code == 'IQ':
-                        print(f'{ticker} pass')
-                    elif has_item(code):
+                    if has_item(code):
                         current_price = get_current_price(ticker)
                         avg = get_balance_avg(code)
                         sell = get_balance(code)
@@ -241,7 +235,7 @@ while True:
                                 print(f"{ticker} selling check....")
 
                         elif ((clo[-1] - indicator['open'][-1]) / indicator['open'][-1]) * 100 < -2 :
-                                if clo[-1] - (clo[-2]-indicator['range'][-2]) < 0:
+                                if clo[-1] - (indicator['open'][-1]-indicator['range'][-2]) < 0:
                                     if dif_rate > 0.5:
                                         if (sell * current_price) > 5000:
                                             upbit.sell_market_order(ticker, sell)
@@ -266,8 +260,8 @@ while True:
                 indicator = calindicator(ticker)
                 if indicator['macd'][-1] - indicator['macd'][-2] > 0 and indicator['macd'][-3] - indicator['macd'][-2] > 0:
                     if indicator['slow_k'][-1] - indicator['slow_k'][-2] > 0 :
-                        if krw > 200000:
-                            upbit.buy_market_order(ticker, 10000)
+                        if krw > 300000:
+                            upbit.buy_market_order(ticker, 60000)
                             print(f"{ticker} buy!!")
                         else:
                             print(f'{ticker} money...')
@@ -276,8 +270,8 @@ while True:
                 elif indicator['macd'][-1] - indicator['macd'][-2] > 0 and indicator['macd'][-2] - indicator['macd'][-3] > 0 and indicator['macd'][-4] - indicator['macd'][-3] > 0:
                     if indicator['close'][-1] -(indicator['open'][-1] - indicator['range'][-1]) > 0:
                         if indicator['slow_k'][-1] - indicator['slow_k'][-2] > 0 :
-                            if krw > 200000:
-                                upbit.buy_market_order(ticker, 10000)
+                            if krw > 300000:
+                                upbit.buy_market_order(ticker, 60000)
                                 print(f"{ticker} buy!!")
                             else:
                                 print(f'{ticker} money...')
