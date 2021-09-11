@@ -66,7 +66,7 @@ def get_ma15(ticker):
     return ma15
 # 기술지표 구하기
 def calindicator(ticker):
-    df = pyupbit.get_ohlcv(ticker, interval="minute240", count=200)
+    df = pyupbit.get_ohlcv(ticker, interval="minute60", count=200)
     # df['ma5'] = df['close'].rolling(window=5).mean()
     # df['ma20'] = df['close'].rolling(window=20).mean()
     # df['ma60'] = df['close'].rolling(window=60).mean()
