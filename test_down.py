@@ -66,7 +66,7 @@ def get_ma15(ticker):
     return ma15
 # 기술지표 구하기
 def calindicator(ticker):
-    df = pyupbit.get_ohlcv(ticker, interval="minute60", count=200)
+    df = pyupbit.get_ohlcv(ticker, interval="minute240", count=200)
     # df['ma5'] = df['close'].rolling(window=5).mean()
     # df['ma20'] = df['close'].rolling(window=20).mean()
     # df['ma60'] = df['close'].rolling(window=60).mean()
@@ -228,7 +228,7 @@ while True:
                                 if (sell * current_price) > 5000:
                                     upbit.sell_market_order(ticker, sell)
                                     print(f'{ticker} few profit sell!!')
-                            elif dif_rate < -2:
+                            elif dif_rate < -5:
                                 if (sell * current_price) > 5000:
                                     upbit.sell_market_order(ticker, sell)
                                     print(f'{ticker} loss sell!!')
@@ -241,14 +241,14 @@ while True:
                                         if (sell * current_price) > 5000:
                                             upbit.sell_market_order(ticker, sell)
                                             print(f'{ticker} few profit sell!!')
-                                    elif dif_rate < -2:
+                                    elif dif_rate < -5:
                                         if (sell * current_price) > 5000:
                                             upbit.sell_market_order(ticker, sell)
                                             print(f'{ticker} loss sell!!')
                                 else:
                                     print(f"{ticker} selling check....")
 
-                        elif dif_rate < -2:
+                        elif dif_rate < -5:
                             if (sell * current_price) > 5000:
                                 upbit.sell_market_order(ticker, sell)
                                 print(f'{ticker} lose sell!!')
