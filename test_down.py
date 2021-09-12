@@ -8,8 +8,8 @@ import datetime
 import pandas
 import requests
 
-access = "pZu3BxK"
-secret = "ti2uK"
+access = "pZuxK"
+secret = "tiuK"
 
 def _parse_remaining_req(remaining_req):
     """
@@ -107,6 +107,7 @@ def calindicator(ticker):
 #     df['macds'] = round(df['macd'].ewm(span=9).mean(), 2)
 #     df['macdo'] = round(df['macd'] - df['macds'], 2)
     return df
+
 
 def get_balance(ticker):
     """잔고 조회"""
@@ -235,7 +236,7 @@ while True:
                                 print(f"{ticker} selling check....")
 
                         elif ((clo[-1] - indicator['open'][-1]) / indicator['open'][-1]) * 100 < -2 :
-                                if clo[-1] - (clo[-2]-indicator['range'][-2]) < 0:
+                                if clo[-1] - (indicator['open'][-1]-indicator['range'][-2]) < 0:
                                     if dif_rate > 0.5:
                                         if (sell * current_price) > 5000:
                                             upbit.sell_market_order(ticker, sell)
@@ -258,9 +259,9 @@ while True:
 
             if not has_item(code):
                 indicator = calindicator(ticker)
-                if indicator['slow_d'][-2] - indicator['slow_k'][-2] > 0 and indicator['slow_d'][-1] - indicator['slow_k'][-1] < 0 :
+                if indicator['slow_k'][-3] - indicator['slow_k'][-2] > 0 and indicator['slow_k'][-2] - indicator['slow_k'][-1] < 0 and indicator['macdo'][-1] - indicator['macdo'][-2] > 0:
                     if krw > 300000:
-                        upbit.buy_market_order(ticker, 50000)
+                        upbit.buy_market_order(ticker, 60000)
                         print(f"{ticker} buy!!")
                     else:
                         print(f'{ticker} money...')
