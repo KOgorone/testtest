@@ -8,7 +8,7 @@ import datetime
 import pandas
 import requests
 
-access = "pZuxK"
+access = "pZBxK"
 secret = "tiuK"
 
 def _parse_remaining_req(remaining_req):
@@ -66,7 +66,7 @@ def get_ma15(ticker):
     return ma15
 # 기술지표 구하기
 def calindicator(ticker):
-    df = pyupbit.get_ohlcv(ticker, interval="minute240", count=200)
+    df = pyupbit.get_ohlcv(ticker, interval="minute60", count=200)
     # df['ma5'] = df['close'].rolling(window=5).mean()
     # df['ma20'] = df['close'].rolling(window=20).mean()
     # df['ma60'] = df['close'].rolling(window=60).mean()
@@ -95,6 +95,8 @@ def calindicator(ticker):
     df['slow_k'] = df['fast_k'].rolling(window=3).mean()
     df['slow_d'] = df['slow_k'].rolling(window=3).mean()
     df['range'] = (df['high'] - df['low']) * 0.4
+
+    df['R'] = (H - df['close']) /(H - L) * -100
     return df
 
 # asd = calindicator('KRW-ADA')
@@ -107,6 +109,7 @@ def calindicator(ticker):
 #     df['macds'] = round(df['macd'].ewm(span=9).mean(), 2)
 #     df['macdo'] = round(df['macd'] - df['macds'], 2)
     return df
+
 
 
 def get_balance(ticker):
@@ -228,7 +231,7 @@ while True:
                                 if (sell * current_price) > 5000:
                                     upbit.sell_market_order(ticker, sell)
                                     print(f'{ticker} few profit sell!!')
-                            elif dif_rate < -5:
+                            elif dif_rate < -2:
                                 if (sell * current_price) > 5000:
                                     upbit.sell_market_order(ticker, sell)
                                     print(f'{ticker} loss sell!!')
@@ -241,14 +244,14 @@ while True:
                                         if (sell * current_price) > 5000:
                                             upbit.sell_market_order(ticker, sell)
                                             print(f'{ticker} few profit sell!!')
-                                    elif dif_rate < -5:
+                                    elif dif_rate < -2:
                                         if (sell * current_price) > 5000:
                                             upbit.sell_market_order(ticker, sell)
                                             print(f'{ticker} loss sell!!')
                                 else:
                                     print(f"{ticker} selling check....")
 
-                        elif dif_rate < -5:
+                        elif dif_rate < -2:
                             if (sell * current_price) > 5000:
                                 upbit.sell_market_order(ticker, sell)
                                 print(f'{ticker} lose sell!!')
@@ -259,7 +262,7 @@ while True:
 
             if not has_item(code):
                 indicator = calindicator(ticker)
-                if indicator['slow_k'][-3] - indicator['slow_k'][-2] > 0 and indicator['slow_k'][-2] - indicator['slow_k'][-1] < 0 and indicator['macdo'][-1] - indicator['macdo'][-2] > 0:
+                if indicator['R'][-3] - indicator['R'][-2] > 0 and indicator['R'][-2] - indicator['R'][-1] < 0 and indicator['macdo'][-1] - indicator['macdo'][-2] > 0:
                     if krw > 300000:
                         upbit.buy_market_order(ticker, 60000)
                         print(f"{ticker} buy!!")
