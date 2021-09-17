@@ -8,8 +8,8 @@ import datetime
 import pandas
 import requests
 
-access = "pZxK"
-secret = "tiuK"
+access = "pBxK"
+secret = "tuK"
 
 def _parse_remaining_req(remaining_req):
     """
@@ -94,7 +94,9 @@ def calindicator(ticker):
     df['fast_k'] = ((df["close"] - L) / (H - L)) * 100
     df['slow_k'] = df['fast_k'].rolling(window=3).mean()
     df['slow_d'] = df['slow_k'].rolling(window=3).mean()
-    df['range'] = (df['high'] - df['low']) * 0.4
+    df['range'] = (df['high'] - df['low']) * 0.5
+
+    df['R'] = (H - df['close']) /(H - L) * -100
     return df
 
 # asd = calindicator('KRW-ADA')
@@ -222,7 +224,7 @@ while True:
                         avg = get_balance_avg(code)
                         sell = get_balance(code)
                         dif_rate = (((current_price * sell) - (avg * sell)) / (avg * sell)) * 100
-                        if indicator['macd'][-1] - indicator['macd'][-2] < 0:
+                        if indicator['macd'][-1] - indicator['macd'][-2] < 0 and indicator['macdo'][-1] - indicator['macdo'][-2] < 0:
                             if dif_rate > 0.5:
                                 if (sell * current_price) > 5000:
                                     upbit.sell_market_order(ticker, sell)
@@ -235,15 +237,15 @@ while True:
                                 print(f"{ticker} selling check....")
 
                         elif ((clo[-1] - indicator['open'][-1]) / indicator['open'][-1]) * 100 < -2 :
-                                if clo[-1] - (indicator['open'][-1]-indicator['range'][-2]) < 0:
-                                    if dif_rate > 0.5:
-                                        if (sell * current_price) > 5000:
-                                            upbit.sell_market_order(ticker, sell)
-                                            print(f'{ticker} few profit sell!!')
-                                    elif dif_rate < -5:
-                                        if (sell * current_price) > 5000:
-                                            upbit.sell_market_order(ticker, sell)
-                                            print(f'{ticker} loss sell!!')
+                            if clo[-1] - (indicator['open'][-1]-indicator['range'][-2]) < 0:
+                                if dif_rate > 0.5:
+                                    if (sell * current_price) > 5000:
+                                        upbit.sell_market_order(ticker, sell)
+                                        print(f'{ticker} few profit sell!!')
+                                elif dif_rate < -5:
+                                    if (sell * current_price) > 5000:
+                                        upbit.sell_market_order(ticker, sell)
+                                        print(f'{ticker} loss sell!!')
                                 else:
                                     print(f"{ticker} selling check....")
 
@@ -258,28 +260,35 @@ while True:
 
             if not has_item(code):
                 indicator = calindicator(ticker)
-                if indicator['macd'][-1] - indicator['macd'][-2] > 0 and indicator['macd'][-3] - indicator['macd'][-2] > 0:
-                    if indicator['slow_k'][-1] - indicator['slow_k'][-2] > 0 :
-                        if krw > 300000:
-                            upbit.buy_market_order(ticker, 60000)
-                            print(f"{ticker} buy!!")
-                        else:
-                            print(f'{ticker} money...')
+                if indicator['R'][-2] <= -70 and indicator['R'][-1] > -80 and indicator['macdo'][-1] - indicator['macdo'][-2] > 0:
+                    if krw > 300000:
+                        upbit.buy_market_order(ticker, 50000)
+                        print(f"{ticker} buy!!")
                     else:
-                        print(f'{ticker} check!')
-                elif indicator['macd'][-1] - indicator['macd'][-2] > 0 and indicator['macd'][-2] - indicator['macd'][-3] > 0 and indicator['macd'][-4] - indicator['macd'][-3] > 0:
-                    if indicator['close'][-1] -(indicator['open'][-1] - indicator['range'][-1]) > 0:
-                        if indicator['slow_k'][-1] - indicator['slow_k'][-2] > 0 :
-                            if krw > 300000:
-                                upbit.buy_market_order(ticker, 60000)
-                                print(f"{ticker} buy!!")
-                            else:
-                                print(f'{ticker} money...')
-                        else:
-                            print(f'{ticker} check!')
-
+                        print(f'{ticker} money...')
                 else:
-                    print(f"{ticker} keeping....")
+                    print(f'{ticker} check!')
+
+                # if indicator['slow_k'][-3] - indicator['slow_k'][-2] > 0 and indicator['slow_k'][-1] - indicator['slow_k'][-2] > 0 and indicator['macdo'][-1] - indicator['macdo'][-2] > 0:
+                #     if krw > 300000:
+                #         upbit.buy_market_order(ticker, 60000)
+                #         print(f"{ticker} buy!!")
+                #     else:
+                #         print(f'{ticker} money...')
+                #
+                # elif indicator['macd'][-1] - indicator['macd'][-2] > 0 and indicator['macd'][-2] - indicator['macd'][-3] > 0 and indicator['macd'][-4] - indicator['macd'][-3] > 0:
+                #     if indicator['close'][-1] -(indicator['open'][-1] - indicator['range'][-2]) > 0:
+                #         if indicator['slow_k'][-1] - indicator['slow_k'][-2] > 0 :
+                #             if krw > 300000:
+                #                 upbit.buy_market_order(ticker, 60000)
+                #                 print(f"{ticker} buy!!")
+                #             else:
+                #                 print(f'{ticker} money...')
+                #         else:
+                #             print(f'{ticker} check!')
+
+            else:
+                print(f"{ticker} keeping....")
 
             time.sleep(0.06)
 
