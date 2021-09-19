@@ -227,7 +227,7 @@ while True:
             current_price = get_current_price(ticker)
             krw = get_balance("KRW")
             # 매도 확인부터
-            if i == 0 or i == 33 or i == 66:
+            if i == 1 or i == 33 or i == 66:
                 for j in range(1, len(upbit.get_balances())):
                     code = upbit.get_balances()[j]['currency']
                     ticker = ('KRW-' + code)
