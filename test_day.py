@@ -8,8 +8,8 @@ import datetime
 import pandas
 import requests
 
-access = "pBxK"
-secret = "tuK"
+access = "pZxK"
+secret = "t2uK"
 
 def _parse_remaining_req(remaining_req):
     """
@@ -67,6 +67,7 @@ def get_ma15(ticker):
 # 기술지표 구하기
 def calindicator(ticker):
     df = pyupbit.get_ohlcv(ticker, interval="day", count=200)
+
     # df['ma5'] = df['close'].rolling(window=5).mean()
     # df['ma20'] = df['close'].rolling(window=20).mean()
     # df['ma60'] = df['close'].rolling(window=60).mean()
@@ -77,6 +78,7 @@ def calindicator(ticker):
     df['macd'] = df.apply(lambda x: (x['ma12'] - x['ma26']), axis=1)
     df['macds'] = df['macd'].ewm(span=9).mean()
     df['macdo'] = df['macd'] - df['macds']
+
 
     # df['momentum'] = df['close'] - df['close'].shift(10)
 
@@ -97,17 +99,30 @@ def calindicator(ticker):
     df['range'] = (df['high'] - df['low']) * 0.5
 
     df['R'] = (H - df['close']) /(H - L) * -100
+    df['mbb'] = df['close'].rolling(window=20).mean()
+    df['std'] = df['close'].rolling(window=20).std()
+    df['ubb'] = df['mbb'] + 2*df['std']
+    df['lbb'] = df['mbb'] - 2*df['std']
+    df['perb'] = (df['close'] - df['lbb']) / (df['ubb'] - df['lbb'])
+    df['bw'] = (df['ubb'] - df['lbb']) / df['mbb']
+
     return df
 
-# asd = calindicator('KRW-ADA')
-# print(asd)
-# def macd(ticker):
-#     df = pyupbit.get_ohlcv(ticker, interval="day", count=30)
-#     df['ma12'] = round(df['close'].ewm(span=12).mean(), 2)
-#     df['ma26'] = round(df['close'].ewm(span=26).mean(), 2)
-#     df['macd'] = round(df.apply(lambda x: (x['ma12'] - x['ma26']), axis=1), 2)
-#     df['macds'] = round(df['macd'].ewm(span=9).mean(), 2)
-#     df['macdo'] = round(df['macd'] - df['macds'], 2)
+def macd(ticker):
+    df = pyupbit.get_ohlcv(ticker, interval="week", count=200)
+    df['ma12'] = round(df['close'].ewm(span=12).mean(), 2)
+    df['ma26'] = round(df['close'].ewm(span=26).mean(), 2)
+    df['macd'] = round(df.apply(lambda x: (x['ma12'] - x['ma26']), axis=1), 2)
+    df['macds'] = round(df['macd'].ewm(span=9).mean(), 2)
+    df['macdo'] = round(df['macd'] - df['macds'], 2)
+
+    L = df["low"].rolling(window=14).min()
+    H = df["high"].rolling(window=14).max()
+    df['fast_k'] = ((df["close"] - L) / (H - L)) * 100
+    df['slow_k'] = df['fast_k'].rolling(window=3).mean()
+    df['slow_d'] = df['slow_k'].rolling(window=3).mean()
+    df['range'] = (df['high'] - df['low']) * 0.5
+
     return df
 
 def get_balance(ticker):
@@ -212,19 +227,23 @@ while True:
             current_price = get_current_price(ticker)
             krw = get_balance("KRW")
             # 매도 확인부터
-            if i == 0 or i == 51:
+            if i == 0 or i == 33 or i == 66:
                 for j in range(1, len(upbit.get_balances())):
                     code = upbit.get_balances()[j]['currency']
                     ticker = ('KRW-' + code)
+                    if code == 'APENFT':
+                        continue
                     indicator = calindicator(ticker)
                     clo = indicator['close']
                     time.sleep(0.02)
+                    wmacd = macd(ticker)
+                    # if code = ''
                     if has_item(code):
                         current_price = get_current_price(ticker)
                         avg = get_balance_avg(code)
                         sell = get_balance(code)
                         dif_rate = (((current_price * sell) - (avg * sell)) / (avg * sell)) * 100
-                        if indicator['macd'][-1] - indicator['macd'][-2] < 0 and indicator['macdo'][-1] - indicator['macdo'][-2] < 0:
+                        if indicator['macd'][-1] - indicator['macd'][-2] < 0 and indicator['macdo'][-1] - indicator['macdo'][-2] < 0 :
                             if dif_rate > 0.5:
                                 if (sell * current_price) > 5000:
                                     upbit.sell_market_order(ticker, sell)
@@ -260,7 +279,8 @@ while True:
 
             if not has_item(code):
                 indicator = calindicator(ticker)
-                if indicator['R'][-2] <= -70 and indicator['R'][-1] > -80 and indicator['macdo'][-1] - indicator['macdo'][-2] > 0:
+                if indicator['R'][-2] - indicator['R'][-1] < 0 and indicator['R'][-2] <= -70 and indicator['R'][-1] > -80 \
+                        and indicator['macdo'][-1] - indicator['macdo'][-2] > 0 and wmacd['macd'][-1] > wmacd['macd'][-2]:
                     if krw > 300000:
                         upbit.buy_market_order(ticker, 50000)
                         print(f"{ticker} buy!!")
