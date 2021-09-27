@@ -8,8 +8,8 @@ import datetime
 import pandas
 import requests
 
-access = "pZxK"
-secret = "t2uK"
+access = "pBxK"
+secret = "tiE2uK"
 
 def _parse_remaining_req(remaining_req):
     """
@@ -66,7 +66,7 @@ def get_ma15(ticker):
     return ma15
 # 기술지표 구하기
 def calindicator(ticker):
-    df = pyupbit.get_ohlcv(ticker, interval="day", count=200)
+    df = pyupbit.get_ohlcv(ticker, interval="minute60", count=200)
 
     # df['ma5'] = df['close'].rolling(window=5).mean()
     # df['ma20'] = df['close'].rolling(window=20).mean()
@@ -108,6 +108,9 @@ def calindicator(ticker):
 
     return df
 
+
+# asd = calindicator('KRW-ADA')
+# print(asd)
 def macd(ticker):
     df = pyupbit.get_ohlcv(ticker, interval="week", count=200)
     df['ma12'] = round(df['close'].ewm(span=12).mean(), 2)
@@ -124,6 +127,8 @@ def macd(ticker):
     df['range'] = (df['high'] - df['low']) * 0.5
 
     return df
+# sdf = macd('KRW-ADA')
+# print(sdf)
 
 def get_balance(ticker):
     """잔고 조회"""
@@ -279,13 +284,13 @@ while True:
 
             if not has_item(code):
                 indicator = calindicator(ticker)
-                if indicator['R'][-2] - indicator['R'][-1] < 0 and indicator['R'][-2] <= -70 and indicator['R'][-1] > -80 \
-                        and indicator['macdo'][-1] - indicator['macdo'][-2] > 0 and wmacd['macd'][-1] > wmacd['macd'][-2]:
-                    if krw > 300000:
-                        upbit.buy_market_order(ticker, 50000)
-                        print(f"{ticker} buy!!")
-                    else:
-                        print(f'{ticker} money...')
+                if wmacd['macd'][-1] > wmacd['macd'][-2] or wmacd['slow_k'][-1] > wmacd['slow_k'][-2] :
+                    if indicator['macdo'][-1] - indicator['macdo'][-2] > 0 and indicator['slow_k'][-1] > indicator['slow_k'][-2] and indicator['slow_k'][-2] < indicator['slow_k'][-3]
+                        if krw > 300000:
+                            upbit.buy_market_order(ticker, 50000)
+                            print(f"{ticker} buy!!")
+                        else:
+                            print(f'{ticker} money...')
                 else:
                     print(f'{ticker} check!')
 
