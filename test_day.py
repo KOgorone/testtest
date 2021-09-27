@@ -8,7 +8,7 @@ import datetime
 import pandas
 import requests
 
-access = "pBxK"
+access = "pZBxK"
 secret = "tiE2uK"
 
 def _parse_remaining_req(remaining_req):
@@ -94,8 +94,8 @@ def calindicator(ticker):
     L = df["low"].rolling(window=14).min()
     H = df["high"].rolling(window=14).max()
     df['fast_k'] = ((df["close"] - L) / (H - L)) * 100
-    df['slow_k'] = df['fast_k'].rolling(window=3).mean()
-    df['slow_d'] = df['slow_k'].rolling(window=3).mean()
+    df['slow_k'] = df['fast_k'].rolling(window=4).mean()
+    df['slow_d'] = df['slow_k'].rolling(window=4).mean()
     df['range'] = (df['high'] - df['low']) * 0.5
 
     df['R'] = (H - df['close']) /(H - L) * -100
@@ -122,8 +122,8 @@ def macd(ticker):
     L = df["low"].rolling(window=14).min()
     H = df["high"].rolling(window=14).max()
     df['fast_k'] = ((df["close"] - L) / (H - L)) * 100
-    df['slow_k'] = df['fast_k'].rolling(window=3).mean()
-    df['slow_d'] = df['slow_k'].rolling(window=3).mean()
+    df['slow_k'] = df['fast_k'].rolling(window=4).mean()
+    df['slow_d'] = df['slow_k'].rolling(window=4).mean()
     df['range'] = (df['high'] - df['low']) * 0.5
 
     return df
@@ -248,7 +248,7 @@ while True:
                         avg = get_balance_avg(code)
                         sell = get_balance(code)
                         dif_rate = (((current_price * sell) - (avg * sell)) / (avg * sell)) * 100
-                        if indicator['macd'][-1] - indicator['macd'][-2] < 0 and indicator['macdo'][-1] - indicator['macdo'][-2] < 0 :
+                        if indicator['slow_k'][-1] < indicator['slow_d'][-1] and indicator['slow_k'][-2] > indicator['slow_d'][-2]  and indicator['macdo'][-1] - indicator['macdo'][-2] < 0 :
                             if dif_rate > 0.5:
                                 if (sell * current_price) > 5000:
                                     upbit.sell_market_order(ticker, sell)
@@ -283,9 +283,10 @@ while True:
                 print('balances check complete')
 
             if not has_item(code):
+                wmacd = macd(ticker)
                 indicator = calindicator(ticker)
-                if wmacd['macd'][-1] > wmacd['macd'][-2] or wmacd['slow_k'][-1] > wmacd['slow_k'][-2] :
-                    if indicator['macdo'][-1] - indicator['macdo'][-2] > 0 and indicator['slow_k'][-1] > indicator['slow_k'][-2] and indicator['slow_k'][-2] < indicator['slow_k'][-3]
+                if wmacd['slow_k'][-1] > wmacd['slow_k'][-2] :
+                    if indicator['macdo'][-1] - indicator['macdo'][-2] > 0 and indicator['slow_k'][-1] > indicator['slow_d'][-1] and indicator['slow_k'][-2] < indicator['slow_d'][-2]:
                         if krw > 300000:
                             upbit.buy_market_order(ticker, 50000)
                             print(f"{ticker} buy!!")
